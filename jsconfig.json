@@ -1,0 +1,9 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "paths": {
+            "@staticData/*": ["static/data/*"],
+            "staticSrc/*": ["static/*"]
+        }
+    }
+}
