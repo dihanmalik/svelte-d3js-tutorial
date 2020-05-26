@@ -1,0 +1,28 @@
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "esmodules": true,
+        },
+      },
+    ],
+  ],
+  "plugins": [
+    "@babel/plugin-transform-runtime",
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "@staticData": [
+            "./static/data"
+          ],
+          "@staticSrc": [
+            "./static/"
+          ]
+        }
+      }
+    ]
+  ]
+}

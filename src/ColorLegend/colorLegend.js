@@ -22,7 +22,7 @@ export const colorLegend = (selection, props) => {
     selection.attr(
         'transform',
         `translate(${circleRadius * 2 + 10}, ${window.innerHeight -
-            (spacing * n + circleRadius * 2 - 10)})`
+        (spacing * n + circleRadius * 2 - 10)})`
     )
 
     const groups = selection.selectAll('g').data(colorScale.domain())

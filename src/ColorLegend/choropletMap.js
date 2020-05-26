@@ -13,11 +13,12 @@ import {
     geoPath,
     transition,
     zoom,
+    geoCentroid
 } from 'd3'
 
-import airports from '@staticData/airport.csv'
+import airports from '../../static/data/airport.csv'
 import getLocations from './dummyLoc'
-import personImage from '@staticSrc/maleIcon.png'
+import personImage from '../../static/maleIcon.png'
 
 const width = window.innerWidth,
     height = window.innerHeight
@@ -36,20 +37,20 @@ const simulation = forceSimulation()
     .force('center', forceCenter(width / 2, height / 2))
     .stop()
 
-function dragStarted(d) {
+function dragStarted (d) {
     // if (positioning === 'map') { return }
     simulation.alphaTarget(0.3).restart()
     d.fx = d.x
     d.fy = d.y
 }
 
-function dragged(d) {
+function dragged (d) {
     // if (positioning === 'map') { return }
     d.fx = event.x
     d.fy = event.y
 }
 
-function dragEnded(d) {
+function dragEnded (d) {
     // if (positioning === 'map') { return }
     simulation.alphaTarget(0)
     d.fx = null
@@ -121,6 +122,7 @@ export const choropletMap = async (selection, props) => {
 
     const countryPaths = g.selectAll('.country').data(features)
 
+
     const countryPathsEnter = countryPaths
         .enter()
         .append('path')
@@ -129,60 +131,80 @@ export const choropletMap = async (selection, props) => {
 
     countryPaths
         .merge(countryPathsEnter)
-        // .attr('fill', d => colorScale(colorValue(d)))
-        .attr('fill', '#707070')
-        .attr('opacity', d =>
-            !selectedValue || selectedValue === colorValue(d) ? 1 : 0.3
-        )
+        .attr('fill', d => colorScale(colorValue(d)))
+        .attr('opacity', d => {
+            return !selectedValue || selectedValue === colorValue(d) ? 1 : 0.3
+        })
         .classed('highlighted', d => selectedValue === colorValue(d))
 
     countryPathsEnter
         .append('title')
         .text(d => `${d.properties.name}: ${colorValue(d)}`)
 
-    const paths = g
-        .selectAll('line.paths')
-        .data(links)
-        .join('line')
-        .attr('class', 'paths')
-        .attr('stroke-width', 1)
-        .attr('stroke', '#124ece')
-        .attr('fill', 'none')
 
-    const circles = g
-        .selectAll('circle.nodes')
-        .data(locations)
-        .join('circle')
-        .attr('class', 'nodes')
-        .attr('r', 5)
-        .attr('fill', d => (d.name ? 'red' : 'url(#maleIcon)'))
-        .attr('stroke', 'pink')
-        .call(dragger)
+    const countryLabel = g.selectAll('.countryLabel').data(features)
 
-    fixed(true)
-    setTimeout(() => {
-        simulation.alpha(1).restart()
-    }, 5000)
+    const countryLabelEnter = countryLabel
+        .enter()
+        .append('text')
+        .text(d => d.properties.name)
+        .attr('class', 'countryLabel')
+        .attr('text-anchor', 'middle')
+        .attr('transform', d => `translate(${projection(geoCentroid(d))})`)
 
-    function fixed(immediate) {
-        locations.forEach(d => {
-            var pos = projection([d.longitude, d.latitude])
-            d.x = pos[0]
-            d.y = pos[1]
+    countryLabel
+        .merge(countryLabelEnter)
+        .attr('opacity', d => {
+            return !selectedValue || selectedValue === colorValue(d) ? 1 : 0.3
         })
 
-        var t = transition()
-            .duration(immediate ? 0 : 600)
-            .ease(easeElastic.period(0.5))
 
-        update(paths.transition(t), circles.transition(t))
-    }
 
-    function ticked() {
+
+
+    // const paths = g
+    //     .selectAll('line.paths')
+    //     .data(links)
+    //     .join('line')
+    //     .attr('class', 'paths')
+    //     .attr('stroke-width', 1)
+    //     .attr('stroke', '#124ece')
+    //     .attr('fill', 'none')
+
+    // const circles = g
+    //     .selectAll('circle.nodes')
+    //     .data(locations)
+    //     .join('circle')
+    //     .attr('class', 'nodes')
+    //     .attr('r', 5)
+    //     .attr('fill', d => (d.name ? 'red' : 'url(#maleIcon)'))
+    //     .attr('stroke', 'pink')
+    //     .call(dragger)
+
+    // fixed(true)
+    // setTimeout(() => {
+    //     simulation.alpha(1).restart()
+    // }, 5000)
+
+    // function fixed (immediate) {
+    //     locations.forEach(d => {
+    //         var pos = projection([d.longitude, d.latitude])
+    //         d.x = pos[0]
+    //         d.y = pos[1]
+    //     })
+
+    //     var t = transition()
+    //         .duration(immediate ? 0 : 600)
+    //         .ease(easeElastic.period(0.5))
+
+    //     update(paths.transition(t), circles.transition(t))
+    // }
+
+    function ticked () {
         update(paths, circles)
     }
 
-    function update(paths, circles) {
+    function update (paths, circles) {
         // paths.attr('d', linkArc)
         paths
             .attr('x1', d => d.source.x)
@@ -193,7 +215,7 @@ export const choropletMap = async (selection, props) => {
         circles.attr('cx', d => d.x).attr('cy', d => d.y)
     }
 
-    function linkArc(d) {
+    function linkArc (d) {
         const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y)
         return `
           M${d.source.x},${d.source.y}

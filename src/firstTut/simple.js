@@ -1,4 +1,4 @@
-(function() {
+(function () {
   const app = document.getElementById("app");
 
   const data = [4, 8, 15, 16, 23, 42],
